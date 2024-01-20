@@ -1,0 +1,20 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  padding: 50px;
+  background: #fff;
+}
+
+.frame {
+  height: calc(100vh - 100px);
+  /* 青から黄色へのグラデーション */
+  background: linear-gradient(45deg, #00FFFF, #FFFF00);
+}
+
+canvas {
+  width: 100%;
+  height: calc(100vh - 100px);
+}
