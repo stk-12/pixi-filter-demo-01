@@ -14,11 +14,13 @@ class Main {
       {
         name: 'video01',
         path: 'video01.mp4',
+        zIndex: 3,
       },
-      // {
-      //   name: 'video02',
-      //   path: 'video02.mp4',
-      // },
+      {
+        name: 'video02',
+        path: 'video02.mp4',
+        zIndex: 1,
+      },
       // {
       //   name: 'video03',
       //   path: 'video03.mp4',
@@ -38,6 +40,7 @@ class Main {
     this.app.stage.eventMode = 'static';
 
     this.container = new PIXI.Container();
+    this.container.sortableChildren = true; // zIndexを有効化
     this.app.stage.addChild(this.container);
 
 
@@ -56,6 +59,8 @@ class Main {
   _init() {
     this._setupBgVideo();
     this._setupDisplacementFilter()
+
+    this._setupAnimation();
   }
 
   _setupBgVideo() {
@@ -63,6 +68,7 @@ class Main {
       const videoTexture = PIXI.Texture.from(video.path); // videoのサイズは16:9にする
       const videoSprite = new PIXI.Sprite(videoTexture);
       videoSprite.name = video.name;
+      videoSprite.zIndex = video.zIndex;
 
       const videoElement = videoTexture.baseTexture.resource.source;
       videoElement.muted = true; // ビデオをミュートに設定
@@ -70,6 +76,8 @@ class Main {
 
       this._resizeVideoSprite(videoSprite);
       this.container.addChild(videoSprite);
+
+      this.backgrounds[video.name] = videoSprite;
     });
   }
 
@@ -88,14 +96,47 @@ class Main {
   }
 
   _setupDisplacementFilter() {
-    const displacementFilter = new PIXI.filters.DisplacementFilter(this.displacementSprite);
-    this.container.filters = [displacementFilter];
+    this.displacementFilter = new PIXI.filters.DisplacementFilter(this.displacementSprite);
+    this.container.filters = [this.displacementFilter];
 
-    displacementFilter.padding = 10;
-    displacementFilter.scale.y = 500;
-
+    this.displacementFilter.padding = 10;
+    this.displacementFilter.scale.x = 0;
+    this.displacementFilter.scale.y = 0;
 
     this.app.stage.addChild(this.displacementSprite);
+  }
+
+  _setupAnimation() {
+    const tl = gsap.timeline({ repeat: -1 });
+    tl.to(this.backgrounds.video01, {
+      duration: 0.3,
+      delay: 3.0,
+      ease: 'power2.inOut',
+      pixi: {
+        alpha: 0,
+      },
+    })
+    .to(this.displacementFilter.scale, {
+      duration: 0.15,
+      y: 200,
+      // x: 200,
+      ease: 'expo.inOut',
+    }, '<')
+    .to(this.displacementFilter.scale, {
+      duration: 0.15,
+      y: 0,
+      // x: 0,
+      ease: 'expo.inOut',
+    })
+    .to(this.backgrounds.video01, {
+      duration: 0.3,
+      ease: 'power2.inOut',
+      pixi: {
+        alpha: 1,
+        // displacementFilter: { scaleX: 0.5, scaleY: 0.5 }
+      }
+    }, '+=3.0')
+
   }
 
   // update(delta) {
